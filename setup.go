@@ -6,92 +6,146 @@ import (
 	"strings"
 )
 
+type NodeInfo struct {
+	name, code, anonymousField   string
+	childrenNames, childrenCodes map[string]struct{}
+}
+
+func (ni NodeInfo) path() string {
+	if ni.anonymousField == `` {
+		return ni.code
+	} else {
+		return ni.code + `.` + ni.anonymousField
+	}
+}
+
+func (ni NodeInfo) mustBeNode() bool {
+	return ni.anonymousField == ``
+}
+
+func (ni *NodeInfo) getNameCode(field reflect.StructField) (name, code string) {
+	tagParts := strings.Split(string(field.Tag), ",")
+	name = tagParts[0]
+	if len(tagParts) > 1 && tagParts[1] != "" {
+		code = tagParts[1]
+	} else {
+		code = field.Name
+	}
+	ni.addChild(name, code)
+
+	if ni.code != `` {
+		code = ni.code + `.` + code
+	}
+	if name == `` {
+		log.Panicf(`节点"%s"名称不能为空`, code)
+	}
+	return
+}
+
+func (ni *NodeInfo) addChild(name, code string) {
+	if ni.childrenNames == nil {
+		ni.childrenNames = make(map[string]struct{})
+	}
+	if _, ok := ni.childrenNames[name]; ok {
+		log.Panicf(`节点"%s"有同名的子节点"%s"`, ni.code, name)
+	} else {
+		ni.childrenNames[name] = struct{}{}
+	}
+	if ni.childrenCodes == nil {
+		ni.childrenCodes = make(map[string]struct{})
+	}
+	if _, ok := ni.childrenCodes[code]; ok {
+		log.Panicf(`节点"%s"有同Code的子节点"%s"`, ni.code, code)
+	} else {
+		ni.childrenCodes[code] = struct{}{}
+	}
+}
+
+func (ni NodeInfo) getCode(field reflect.StructField) (code string) {
+	tagParts := strings.Split(string(field.Tag), ",")
+	if len(tagParts) > 1 && tagParts[1] != "" {
+		code = tagParts[1]
+	} else {
+		code = field.Name
+	}
+	if ni.code != `` {
+		code = ni.code + `.` + code
+	}
+	return
+}
+
 // 设置树的所有节点的name、code
 func Setup(tree NodeIfc, name, code string) {
 	treeValue := reflect.ValueOf(tree)
 	if treeValue.Kind() != reflect.Ptr {
-		log.Panicf("根节点应该是一个指针，而不是%v\n", treeValue.Kind())
+		log.Panicf(`根节点应该是一个指针，而不是%v`, treeValue.Kind())
 	}
-	setup(treeValue, name, code, ``)
+	setup(treeValue, &NodeInfo{name: name, code: code})
 }
 
-func setup(node reflect.Value, name, code, anonymousField string) {
+func setup(node reflect.Value, info *NodeInfo) {
 	if node.Kind() == reflect.Ptr {
 		if node.IsNil() {
 			if node.CanSet() {
 				node.Set(reflect.New(node.Type().Elem()))
 			} else {
-				log.Panicf("字段`%s.%s`不能Set（使用非指针类型，或者导出该字段）\n", code, anonymousField)
+				log.Panicf(`字段"%s"不能Set（使用非指针类型，或者导出该字段）`, info.path())
 			}
 		}
 		node = node.Elem()
 	}
 	if node.Kind() != reflect.Struct {
-		log.Panicf("节点`%s`应该是结构体，而不是%v\n", code, node.Kind())
+		log.Panicf(`节点"%s"应该是结构体，而不是%v`, info.path(), node.Kind())
 	}
-	isNode := setupChildrenFields(node, name, code)
-	if anonymousField == `` && !isNode {
-		log.Panicf("节点`%s`应该匿名嵌入tree.Node结构体\n", code)
+	isNode := setupChildrenFields(node, info)
+	if info.mustBeNode() && !isNode {
+		log.Panicf(`节点"%s"应该匿名嵌入tree.Node结构体`, info.path())
 	}
 }
 
-func setupChildrenFields(stuct reflect.Value, name, code string) (isNode bool) {
+func setupChildrenFields(stuct reflect.Value, info *NodeInfo) (isNode bool) {
 	for i, typ := 0, stuct.Type(); i < typ.NumField(); i++ {
 		field := typ.Field(i)
 		switch field.Type {
 		case nodeType:
-			setupNameCode(field, stuct.Field(i).Addr(), name, code, &isNode)
+			setupNameCode(field, stuct.Field(i).Addr(), info, &isNode)
 		case ptr2nodeType:
 			value := stuct.Field(i)
 			if value.IsNil() {
 				value.Set(reflect.New(nodeType))
 			}
-			setupNameCode(field, value, name, code, &isNode)
+			setupNameCode(field, value, info, &isNode)
 		default:
-			setupField(field, stuct.Field(i), name, code)
+			setupField(field, stuct.Field(i), info)
 		}
 	}
 	return
 }
 
-func setupNameCode(field reflect.StructField, value reflect.Value, name, code string, isNode *bool) {
+func setupNameCode(field reflect.StructField, value reflect.Value, info *NodeInfo, isNode *bool) {
 	if !exported(field.Name) {
-		_, code = getNameCode(field, code)
-		log.Panicf("节点`%s`不能是非导出的\n", code) // 非导出的设置不了name、code
+		log.Panicf(`节点"%s"不能是非导出的`, info.getCode(field)) // 非导出的设置不了name、code
 	}
+	name, code := info.name, info.code
 	if field.Anonymous {
 		*isNode = true
 	} else {
-		name, code = getNameCode(field, code)
+		name, code = info.getNameCode(field)
 	}
 	value.Interface().(*Node).SetNameCode(name, code)
 }
 
-func getNameCode(field reflect.StructField, base string) (name, code string) {
-	tagParts := strings.Split(string(field.Tag), ",")
-	name = tagParts[0]
-	if len(tagParts) > 1 {
-		code = tagParts[1]
+func setupField(field reflect.StructField, value reflect.Value, info *NodeInfo) {
+	if field.Anonymous && field.Tag == `` {
+		// 匿名嵌入且节点名称为空，只用来做类型共享，所以继续使用当前的NodeInfo
+		info.anonymousField = field.Name
+		setup(value, info)
+	} else if exported(field.Name) {
+		// 其余的导出字段都应该是树节点
+		name, code := info.getNameCode(field)
+		setup(value, &NodeInfo{name: name, code: code})
 	} else {
-		code = field.Name
-	}
-	if base != `` {
-		code = base + `.` + code
-	}
-	return
-}
-
-func setupField(field reflect.StructField, value reflect.Value, name, code string) {
-	if exported(field.Name) {
-		name, code = getNameCode(field, code)
-		// 导出的字段都应该是树节点
-		setup(value, name, code, ``)
-	} else if field.Anonymous {
-		// 非导出的匿名字段不应该是树节点，只用来做类型共享，所以继续使用当前的name、code
-		setup(value, name, code, field.Name)
-	} else {
-		_, code := getNameCode(field, code)
-		log.Panicf("`%s`不能既是非导出的，又是非匿名的\n", code)
+		log.Panicf(`非导出字段"%s"不能作为树节点`, info.getCode(field))
 	}
 }
 

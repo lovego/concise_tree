@@ -12,7 +12,7 @@ type ReadWrite struct {
 	*struct_tree.Node
 	Read   *struct_tree.Node `读取`
 	*Write `写入`
-	other
+	Other
 }
 type Write struct {
 	struct_tree.Node
@@ -20,7 +20,7 @@ type Write struct {
 	Update *struct_tree.Node `编辑`
 	Delete *struct_tree.Node `删除`
 }
-type other struct {
+type Other struct {
 	Audit struct_tree.Node `审核`
 }
 

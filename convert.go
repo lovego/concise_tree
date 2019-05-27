@@ -39,13 +39,13 @@ func convertCodeName(tree *Tree, field reflect.StructField, value reflect.Value)
 }
 
 func convertField(tree *Tree, field reflect.StructField, value reflect.Value) {
-	if exported(field.Name) {
-		// 导出的字段都应该是树节点
+	if field.Anonymous && field.Tag == `` {
+		// 匿名嵌入且节点名称为空，只用来做类型共享
+		convert(tree, value)
+	} else if exported(field.Name) {
+		// 其余的导出字段都应该是树节点
 		child := Tree{}
 		convert(&child, value)
 		tree.Children = append(tree.Children, child)
-	} else if field.Anonymous {
-		// 非导出的匿名字段不应该是树节点，只用来做类型共享，所以继续使用当前的name、code
-		convert(tree, value)
 	}
 }
