@@ -29,7 +29,7 @@ func (ni *NodeInfo) getNameCode(field reflect.StructField) (name, code string) {
 	if len(tagParts) > 1 && tagParts[1] != "" {
 		code = tagParts[1]
 	} else {
-		code = field.Name
+		code = lowerFirstByte(field.Name)
 	}
 	ni.addChild(name, code)
 
@@ -151,4 +151,13 @@ func setupField(field reflect.StructField, value reflect.Value, info *NodeInfo) 
 
 func exported(name string) bool {
 	return name[0] >= 'A' && name[0] <= 'Z'
+}
+
+func lowerFirstByte(s string) string {
+	if s[0] >= 'A' && s[0] <= 'Z' {
+		b := []byte(s)
+		b[0] += ('a' - 'A')
+		s = string(b)
+	}
+	return s
 }

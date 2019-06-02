@@ -45,12 +45,12 @@ func ExampleSetup() {
 
 	// Output:
 	// ``: 根节点
-	// `Read`: 读取
-	// `Write`: 写入
-	// `Write.Create`: 新增
-	// `Write.Update`: 编辑
-	// `Write.Delete`: 删除
-	// `Audit`: 审核
+	// `read`: 读取
+	// `write`: 写入
+	// `write.create`: 新增
+	// `write.update`: 编辑
+	// `write.delete`: 删除
+	// `audit`: 审核
 }
 
 func ExampleConvert() {
@@ -75,31 +75,31 @@ func ExampleConvert() {
 	//  "children": [
 	//   {
 	//    "name": "读取",
-	//    "code": "Read"
+	//    "code": "read"
 	//   },
 	//   {
 	//    "name": "写入",
-	//    "code": "Write",
+	//    "code": "write",
 	//    "children": [
 	//     {
 	//      "name": "新增",
-	//      "code": "Write.Create"
+	//      "code": "write.create"
 	//     },
 	//     {
 	//      "name": "编辑",
-	//      "code": "Write.Update"
+	//      "code": "write.update"
 	//     },
 	//     {
 	//      "name": "删除",
-	//      "code": "Write.Delete"
+	//      "code": "write.delete"
 	//     }
 	//    ]
 	//   },
 	//   {
 	//    "name": "审核",
-	//    "code": "Audit"
+	//    "code": "audit"
 	//   }
 	//  ]
 	// }
-	// []string{"", "Audit", "Read", "Write", "Write.Create", "Write.Delete", "Write.Update"}
+	// []string{"", "audit", "read", "write", "write.create", "write.delete", "write.update"}
 }
