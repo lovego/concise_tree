@@ -1,7 +1,7 @@
 [English](Readme.md) | 简体中文
 
 # concise\_tree
-用一个简洁的方式定义一棵简洁的树。
+用一种简洁的方式定义一棵简洁的树。
 只支持静态树，这意味着树结构在编译时就固化了。
 
 [![Build Status](https://travis-ci.org/lovego/concise_tree.svg?branch=master)](https://travis-ci.org/lovego/concise_tree)
