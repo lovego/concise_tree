@@ -18,7 +18,7 @@ func ExampleToNormal() {
 		fmt.Println(string(b))
 	}
 
-	if b, err := json.MarshalIndent(normalTree.CodesMap(), "", "  "); err != nil {
+	if b, err := json.MarshalIndent(normalTree.PathsMap(), "", "  "); err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(string(b))

@@ -13,16 +13,16 @@ type NormalTree struct {
 	Children []NormalTree      `json:"children,omitempty"`
 }
 
-func (t NormalTree) CodesMap() map[string]struct{} {
+func (t NormalTree) PathsMap() map[string]struct{} {
 	m := make(map[string]struct{})
-	t.setupCodesMap(m)
+	t.setupPathsMap(m)
 	return m
 }
 
-func (t NormalTree) setupCodesMap(m map[string]struct{}) {
+func (t NormalTree) setupPathsMap(m map[string]struct{}) {
 	m[t.Path] = struct{}{}
 	for _, child := range t.Children {
-		child.setupCodesMap(m)
+		child.setupPathsMap(m)
 	}
 }
 

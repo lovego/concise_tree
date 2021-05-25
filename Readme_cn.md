@@ -4,10 +4,10 @@
 用一种简洁的方式定义一棵简洁的树。
 只支持静态树，这意味着树结构在编译时就固化了。
 
-[![Build Status](https://travis-ci.org/lovego/concise_tree.svg?branch=master)](https://travis-ci.org/lovego/concise_tree)
-[![Coverage Status](https://img.shields.io/coveralls/github/lovego/concise_tree/master.svg)](https://coveralls.io/github/lovego/concise_tree?branch=master)
+[![Build Status](https://github.com/lovego/concise_tree/actions/workflows/go.yml/badge.svg)](https://github.com/lovego/concise_tree/actions/workflows/go.yml)
+[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master)](https://coveralls.io/github/lovego/concise_tree)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lovego/concise_tree)](https://goreportcard.com/report/github.com/lovego/concise_tree)
-[![GoDoc](https://godoc.org/github.com/lovego/concise_tree?status.svg)](https://godoc.org/github.com/lovego/concise_tree)
+[![Documentation](https://pkg.go.dev/badge/github.com/lovego/concise_tree)](https://pkg.go.dev/github.com/lovego/concise_tree)
 
 ## 特征
 - 树结构从一个结构体类型构建而来，所有需要做的就是定义一个结构体。
