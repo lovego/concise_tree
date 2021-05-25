@@ -4,10 +4,10 @@ English | [简体中文](Readme_cn.md)
 A concise way to define a concise tree.
 Only used for static tree, that means tree structure is frozed at compile time.
 
-[![Build Status](https://travis-ci.org/lovego/concise_tree.svg?branch=master)](https://travis-ci.org/lovego/concise_tree)
-[![Coverage Status](https://img.shields.io/coveralls/github/lovego/concise_tree/master.svg)](https://coveralls.io/github/lovego/concise_tree?branch=master)
+[![Build Status](https://github.com/lovego/concise_tree/actions/workflows/go.yml/badge.svg)](https://github.com/lovego/concise_tree/actions/workflows/go.yml)
+[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master)](https://coveralls.io/github/lovego/concise_tree)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lovego/concise_tree)](https://goreportcard.com/report/github.com/lovego/concise_tree)
-[![GoDoc](https://godoc.org/github.com/lovego/concise_tree?status.svg)](https://godoc.org/github.com/lovego/concise_tree)
+[![Documentation](https://pkg.go.dev/badge/github.com/lovego/concise_tree)](https://pkg.go.dev/github.com/lovego/concise_tree)
 
 ## Feature
 - A tree is constructed from a struct type, all need to do is define a struct.
