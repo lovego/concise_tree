@@ -25,40 +25,40 @@ type Modules struct {
 
 func ExampleSetup() {
 	modules := &Modules{}
-	tree.Setup(modules, "权限树", "", "根节点")
+	tree.Setup(modules, "", map[string]string{"name": "根节点"})
 
 	var n tree.ConciseTree
 	n = modules
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Bill
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Bill.List
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Bill.Detail
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Goods
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Goods.Create
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Goods.Update
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	n = modules.Goods.Delete
-	fmt.Println(n.Name(), n.Code(), n.Desc())
+	fmt.Println(n.Path(), n.Tags())
 
 	// Output:
-	// 权限树  根节点
-	// 单据 bill 各种单据
-	// 列表 bill.list 单据列表
-	// 详情 bill.detail 单据详情
-	// 商品 goods 商品（含库存）
-	// 创建 goods.create 商品创建
-	// 更新 goods.update 商品更新
-	// 删除 goods.delete 商品删除
+	// map[name:根节点]
+	// bill map[desc:各种单据 name:单据]
+	// bill.list map[desc:单据列表 name:列表]
+	// bill.detail map[desc:单据详情 name:详情]
+	// goods map[desc:商品（含库存） name:商品]
+	// goods.create map[desc:商品创建 name:创建]
+	// goods.update map[desc:商品更新 name:更新]
+	// goods.delete map[desc:商品删除 name:删除]
 }

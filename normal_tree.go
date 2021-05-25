@@ -8,10 +8,9 @@ import (
 //
 // NormalTree is a tree structure in normal form. It's commonly used in most common cases.
 type NormalTree struct {
-	Name     string       `json:"name"`
-	Code     string       `json:"code"`
-	Desc     string       `json:"desc,omitempty"`
-	Children []NormalTree `json:"children,omitempty"`
+	Path     string            `json:"path"`
+	Tags     map[string]string `json:"tags,omitempty"`
+	Children []NormalTree      `json:"children,omitempty"`
 }
 
 func (t NormalTree) CodesMap() map[string]struct{} {
@@ -21,7 +20,7 @@ func (t NormalTree) CodesMap() map[string]struct{} {
 }
 
 func (t NormalTree) setupCodesMap(m map[string]struct{}) {
-	m[t.Code] = struct{}{}
+	m[t.Path] = struct{}{}
 	for _, child := range t.Children {
 		child.setupCodesMap(m)
 	}
@@ -44,27 +43,25 @@ func convert(tree *NormalTree, node reflect.Value) {
 		field := typ.Field(i)
 		switch field.Type {
 		case nodeType:
-			convertCodeNameDesc(tree, field, node.Field(i).Addr())
+			convertLeafNode(tree, field, node.Field(i).Addr())
 		case ptr2nodeType:
-			convertCodeNameDesc(tree, field, node.Field(i))
+			convertLeafNode(tree, field, node.Field(i))
 		default:
-			convertField(tree, field, node.Field(i))
+			convertNonLeafNode(tree, field, node.Field(i))
 		}
 	}
 }
 
-func convertCodeNameDesc(tree *NormalTree, field reflect.StructField, value reflect.Value) {
+func convertLeafNode(tree *NormalTree, field reflect.StructField, value reflect.Value) {
 	node := value.Interface().(*Node)
 	if field.Anonymous {
-		tree.Name, tree.Code, tree.Desc = node.Name(), node.Code(), node.Desc()
+		tree.Path, tree.Tags = node.Path(), node.Tags()
 	} else {
-		tree.Children = append(tree.Children, NormalTree{
-			Name: node.Name(), Code: node.Code(), Desc: node.Desc(),
-		})
+		tree.Children = append(tree.Children, NormalTree{Path: node.Path(), Tags: node.Tags()})
 	}
 }
 
-func convertField(tree *NormalTree, field reflect.StructField, value reflect.Value) {
+func convertNonLeafNode(tree *NormalTree, field reflect.StructField, value reflect.Value) {
 	if field.Anonymous && field.Tag == `` {
 		// 匿名嵌入且节点名称为空，只用来做类型共享
 		convert(tree, value)

@@ -9,7 +9,7 @@ import (
 
 func ExampleToNormal() {
 	modules := &Modules{}
-	tree.Setup(modules, "权限树", "", "根节点")
+	tree.Setup(modules, "", map[string]string{"name": "根节点"})
 	normalTree := tree.ToNormal(modules)
 
 	if b, err := json.MarshalIndent(normalTree, "", "  "); err != nil {
@@ -26,46 +26,61 @@ func ExampleToNormal() {
 
 	// Output:
 	// {
-	//   "name": "权限树",
-	//   "code": "",
-	//   "desc": "根节点",
+	//   "path": "",
+	//   "tags": {
+	//     "name": "根节点"
+	//   },
 	//   "children": [
 	//     {
-	//       "name": "单据",
-	//       "code": "bill",
-	//       "desc": "各种单据",
+	//       "path": "bill",
+	//       "tags": {
+	//         "desc": "各种单据",
+	//         "name": "单据"
+	//       },
 	//       "children": [
 	//         {
-	//           "name": "列表",
-	//           "code": "bill.list",
-	//           "desc": "单据列表"
+	//           "path": "bill.list",
+	//           "tags": {
+	//             "desc": "单据列表",
+	//             "name": "列表"
+	//           }
 	//         },
 	//         {
-	//           "name": "详情",
-	//           "code": "bill.detail",
-	//           "desc": "单据详情"
+	//           "path": "bill.detail",
+	//           "tags": {
+	//             "desc": "单据详情",
+	//             "name": "详情"
+	//           }
 	//         }
 	//       ]
 	//     },
 	//     {
-	//       "name": "商品",
-	//       "code": "goods",
-	//       "desc": "商品（含库存）",
+	//       "path": "goods",
+	//       "tags": {
+	//         "desc": "商品（含库存）",
+	//         "name": "商品"
+	//       },
 	//       "children": [
 	//         {
-	//           "name": "创建",
-	//           "code": "goods.create",
-	//           "desc": "商品创建"
+	//           "path": "goods.create",
+	//           "tags": {
+	//             "desc": "商品创建",
+	//             "name": "创建"
+	//           }
 	//         },
 	//         {
-	//           "name": "更新",
-	//           "code": "goods.update",
-	//           "desc": "商品更新"
+	//           "path": "goods.update",
+	//           "tags": {
+	//             "desc": "商品更新",
+	//             "name": "更新"
+	//           }
 	//         },
 	//         {
-	//           "name": "删除",
-	//           "code": "goods.delete",
-	//           "desc": "商品删除"
+	//           "path": "goods.delete",
+	//           "tags": {
+	//             "desc": "商品删除",
+	//             "name": "删除"
+	//           }
 	//         }
 	//       ]
 	//     }

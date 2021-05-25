@@ -1,15 +1,17 @@
 package concise_tree
 
-import "reflect"
+import (
+	"log"
+	"reflect"
+)
 
 var nodeType = reflect.TypeOf(Node{})
 var ptr2nodeType = reflect.PtrTo(nodeType)
 
 // ConciseTree use an interface that describe `Node` to represent a concise tree.
 type ConciseTree interface {
-	Name() string
-	Code() string
-	Desc() string
+	Path() string
+	Tags() map[string]string
 }
 
 // Node 代表ConciseTree的一个节点，用来构造结一棵ConciseTree。
@@ -18,21 +20,31 @@ type ConciseTree interface {
 // Node represents a node of ConciseTree，and is used to construct a ConciseTree.
 // All nonleaf nodes should embed this type, all leaf nodes should use this type directly.
 type Node struct {
-	name, code, desc string
+	path string
+	tags map[string]string
 }
 
-func (n *Node) Name() string {
-	return n.name
+func (n *Node) Path() string {
+	return n.path
 }
 
-func (n *Node) Code() string {
-	return n.code
+func (n *Node) Tags() map[string]string {
+	return n.tags
 }
 
-func (n *Node) Desc() string {
-	return n.desc
+func (n *Node) Set(path string, tags map[string]string) {
+	n.path, n.tags = path, tags
 }
 
-func (n *Node) Set(name, code, desc string) {
-	n.name, n.code, n.desc = name, code, desc
+// 设置树的所有节点的path、tags
+func Setup(tree ConciseTree, path string, tags map[string]string) {
+	value := reflect.ValueOf(tree)
+	if value.Kind() != reflect.Ptr {
+		log.Panicf(`tree should be a pointer, not %v`, value.Kind())
+	}
+	(&nodeInfo{
+		value: value,
+		path:  path,
+		tags:  tags,
+	}).setup()
 }
