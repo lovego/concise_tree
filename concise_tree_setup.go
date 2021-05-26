@@ -81,7 +81,7 @@ func (ni *nodeInfo) setPath(parent *nodeInfo) {
 
 func (ni *nodeInfo) setupAsLeaf(parent *nodeInfo) {
 	if !exported(ni.field.Name) {
-		log.Panicf(`node "%s" should be exported`, ni.path) // 非导出的设置不了name、code
+		log.Panicf(`node "%s" should be exported`, ni.path) // 非导出的设置不了path、tags
 	}
 	if ni.field.Anonymous {
 		parent.isNode = true
