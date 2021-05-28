@@ -24,7 +24,7 @@ func ExampleToNormal() {
 		fmt.Println(string(b))
 	}
 
-	if b, err := json.MarshalIndent(normalTree.Keep(func(node tree.NormalTree) bool {
+	if b, err := json.MarshalIndent(normalTree.Keep(func(node tree.NormalTreeNode) bool {
 		return node.Tags["name"] != "商品"
 	}), "", "  "); err != nil {
 		fmt.Println(err)
@@ -138,11 +138,13 @@ func ExampleToNormal() {
 }
 
 func ExampleNormalTree_Keep() {
-	r := tree.NormalTree{Path: "root"}.Keep(func(node tree.NormalTree) bool {
+	r := tree.NormalTree{
+		NormalTreeNode: tree.NormalTreeNode{Path: "root"},
+	}.Keep(func(node tree.NormalTreeNode) bool {
 		return node.Path != "root"
 	})
 	fmt.Printf("%+v\n", r)
 
 	// Output:
-	// {Path: Tags:map[] Children:[]}
+	// {paths:map[] NormalTreeNode:{Path: Tags:map[] Children:[]}}
 }
