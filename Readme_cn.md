@@ -5,9 +5,9 @@
 只支持静态树，这意味着树结构在编译时就固化了。
 
 [![Build Status](https://github.com/lovego/concise_tree/actions/workflows/go.yml/badge.svg)](https://github.com/lovego/concise_tree/actions/workflows/go.yml)
-[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master)](https://coveralls.io/github/lovego/concise_tree)
+[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master&1)](https://coveralls.io/github/lovego/concise_tree)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lovego/concise_tree)](https://goreportcard.com/report/github.com/lovego/concise_tree)
-[![Documentation](https://pkg.go.dev/badge/github.com/lovego/concise_tree)](https://pkg.go.dev/github.com/lovego/concise_tree@v0.0.2)
+[![Documentation](https://pkg.go.dev/badge/github.com/lovego/concise_tree)](https://pkg.go.dev/github.com/lovego/concise_tree@v0.0.3)
 
 ## 特征
 - 树结构从一个结构体类型构建而来，所有需要做的就是定义一个结构体。
