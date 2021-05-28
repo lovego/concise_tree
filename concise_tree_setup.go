@@ -8,37 +8,36 @@ import (
 )
 
 type nodeInfo struct {
-	value          reflect.Value
-	field          reflect.StructField
-	path           string
-	tags           map[string]string
-	anonymousField string
-	isNode         bool
-	childrenCodes  map[string]struct{}
-	childrenNames  map[string]struct{}
+	value         reflect.Value
+	field         reflect.StructField
+	path          string
+	tags          map[string]string
+	isNode        bool
+	childrenCodes map[string]struct{}
+	childrenNames map[string]struct{}
 }
 
-func (ni *nodeInfo) setup() {
+func (ni *nodeInfo) setup(mustBeNode bool, anonymousPath string) {
 	if ni.value.Kind() == reflect.Ptr {
 		if ni.value.IsNil() {
 			if ni.value.CanSet() {
 				ni.value.Set(reflect.New(ni.value.Type().Elem()))
 			} else {
-				log.Panicf(`field "%s" CanSet: false`, ni.getPath())
+				log.Panicf(`field "%s" CanSet: false`, ni.path+anonymousPath)
 			}
 		}
 		ni.value = ni.value.Elem()
 	}
 	if ni.value.Kind() != reflect.Struct {
-		log.Panicf(`node "%s" should be struct, not %v`, ni.getPath(), ni.value.Kind())
+		log.Panicf(`node "%s" should be struct, not %v`, ni.path+anonymousPath, ni.value.Kind())
 	}
-	ni.setupChildren()
-	if ni.mustBeNode() && !ni.isNode {
-		log.Panicf(`node "%s" should anonymously embed concise_tree.Node`, ni.getPath())
+	ni.setupChildren(anonymousPath)
+	if mustBeNode && !ni.isNode {
+		log.Panicf(`node "%s" should anonymously embed concise_tree.Node`, ni.path+anonymousPath)
 	}
 }
 
-func (ni *nodeInfo) setupChildren() {
+func (ni *nodeInfo) setupChildren(anonymousPath string) {
 	for i := 0; i < ni.value.NumField(); i++ {
 		child := &nodeInfo{
 			value: ni.value.Field(i),
@@ -47,21 +46,15 @@ func (ni *nodeInfo) setupChildren() {
 		child.tags = struct_tag.Parse(string(child.field.Tag))
 
 		switch child.value.Type() {
-		case nodeType:
-			child.value = child.value.Addr()
-			child.setupAsLeaf(ni)
-		case ptr2nodeType:
-			if child.value.IsNil() {
-				child.value.Set(reflect.New(nodeType))
-			}
+		case nodeType, ptr2nodeType:
 			child.setupAsLeaf(ni)
 		default:
-			child.setupAsNonLeaf(ni)
+			child.setupAsNonleaf(ni, anonymousPath)
 		}
 	}
 }
 
-func (ni *nodeInfo) setPath(parent *nodeInfo) {
+func (ni *nodeInfo) setPath(parent *nodeInfo, validate bool) {
 	code := ni.tags["code"]
 	if code == "" {
 		code = lowerFirstByte(ni.field.Name)
@@ -72,50 +65,52 @@ func (ni *nodeInfo) setPath(parent *nodeInfo) {
 	} else {
 		ni.path = code
 	}
+	if !validate {
+		return
+	}
 
 	if ni.tags["name"] == `` {
 		log.Panicf(`name of node "%s" is empty`, ni.path)
 	}
-	ni.validateChild(code, ni.tags["name"])
+	parent.validateChild(code, ni.tags["name"])
 }
 
 func (ni *nodeInfo) setupAsLeaf(parent *nodeInfo) {
 	if !exported(ni.field.Name) {
+		ni.setPath(parent, false)
 		log.Panicf(`node "%s" should be exported`, ni.path) // 非导出的设置不了path、tags
 	}
+	if ni.value.Kind() != reflect.Ptr {
+		ni.value = ni.value.Addr()
+	}
+	if ni.value.IsNil() {
+		ni.value.Set(reflect.New(nodeType))
+	}
 	if ni.field.Anonymous {
-		parent.isNode = true
+		parent.isNode = true // only parent need this
 		ni.value.Interface().(*Node).Set(parent.path, parent.tags)
 	} else {
-		ni.setPath(parent)
+		ni.setPath(parent, true)
 		ni.value.Interface().(*Node).Set(ni.path, ni.tags)
 	}
 }
 
-func (ni *nodeInfo) setupAsNonLeaf(parent *nodeInfo) {
+func (ni *nodeInfo) setupAsNonleaf(parent *nodeInfo, anonymousPath string) {
 	if ni.field.Anonymous && ni.tags["name"] == "" {
-		// 匿名嵌入且节点名称为空，只用来做类型共享，所以继续使用parent的path
-		parent.anonymousField = ni.field.Name
-		ni.path = parent.path
-		ni.setup()
+		// 匿名嵌入且节点名称为空，只用来做类型共享，所以继续使用parent的信息：
+		// 除了value更新为child的value，parent的field字段不会被使用外，其他字段都必须用parent的值。
+		parentValue := parent.value
+		parent.value = ni.value
+		parent.setup(false, anonymousPath+"."+ni.field.Name)
+		// 恢复parent的value，因为在上层setupChildren循环中还在继续使用。
+		parent.value = parentValue
 	} else if exported(ni.field.Name) {
 		// 其余的导出字段都应该是树节点
-		ni.setPath(parent)
-		ni.setup()
+		ni.setPath(parent, true)
+		ni.setup(true, "")
 	} else {
+		ni.setPath(parent, false)
 		log.Panicf(`tree node "%s" must be exported`, ni.path)
-	}
-}
-
-func (ni nodeInfo) mustBeNode() bool {
-	return ni.anonymousField == `` // non anonymous field must be a tree node
-}
-
-func (ni nodeInfo) getPath() string {
-	if ni.anonymousField == `` {
-		return ni.path
-	} else {
-		return ni.path + `.` + ni.anonymousField
 	}
 }
 

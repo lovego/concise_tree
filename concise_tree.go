@@ -46,5 +46,5 @@ func Setup(tree ConciseTree, path string, tags map[string]string) {
 		value: value,
 		path:  path,
 		tags:  tags,
-	}).setup()
+	}).setup(true, "")
 }

@@ -6,6 +6,12 @@ import (
 	tree "github.com/lovego/concise_tree"
 )
 
+type cud struct {
+	Create *tree.Node `name:"创建" desc:"商品创建"`
+	Update *tree.Node `name:"更新" desc:"商品更新"`
+	Delete *tree.Node `name:"删除" desc:"商品删除"`
+}
+
 type Modules struct {
 	*tree.Node
 
@@ -16,10 +22,8 @@ type Modules struct {
 	} `name:"单据" desc:"各种单据"`
 
 	Goods *struct {
-		*tree.Node
-		Create *tree.Node `name:"创建" desc:"商品创建"`
-		Update *tree.Node `name:"更新" desc:"商品更新"`
-		Delete *tree.Node `name:"删除" desc:"商品删除"`
+		tree.Node
+		cud
 	} `name:"商品" desc:"商品（含库存）"`
 }
 

@@ -24,6 +24,14 @@ func ExampleToNormal() {
 		fmt.Println(string(b))
 	}
 
+	if b, err := json.MarshalIndent(normalTree.Keep(func(node tree.NormalTree) bool {
+		return node.Tags["name"] != "商品"
+	}), "", "  "); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(string(b))
+	}
+
 	// Output:
 	// {
 	//   "path": "",
@@ -96,4 +104,45 @@ func ExampleToNormal() {
 	//   "goods.delete": {},
 	//   "goods.update": {}
 	// }
+	// {
+	//   "path": "",
+	//   "tags": {
+	//     "name": "根节点"
+	//   },
+	//   "children": [
+	//     {
+	//       "path": "bill",
+	//       "tags": {
+	//         "desc": "各种单据",
+	//         "name": "单据"
+	//       },
+	//       "children": [
+	//         {
+	//           "path": "bill.list",
+	//           "tags": {
+	//             "desc": "单据列表",
+	//             "name": "列表"
+	//           }
+	//         },
+	//         {
+	//           "path": "bill.detail",
+	//           "tags": {
+	//             "desc": "单据详情",
+	//             "name": "详情"
+	//           }
+	//         }
+	//       ]
+	//     }
+	//   ]
+	// }
+}
+
+func ExampleNormalTree_Keep() {
+	r := tree.NormalTree{Path: "root"}.Keep(func(node tree.NormalTree) bool {
+		return node.Path != "root"
+	})
+	fmt.Printf("%+v\n", r)
+
+	// Output:
+	// {Path: Tags:map[] Children:[]}
 }
