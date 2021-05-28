@@ -5,7 +5,7 @@ A concise way to define a concise tree.
 Only used for static tree, that means tree structure is frozed at compile time.
 
 [![Build Status](https://github.com/lovego/concise_tree/actions/workflows/go.yml/badge.svg)](https://github.com/lovego/concise_tree/actions/workflows/go.yml)
-[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master)](https://coveralls.io/github/lovego/concise_tree)
+[![Coverage Status](https://coveralls.io/repos/github/lovego/concise_tree/badge.svg?branch=master&1)](https://coveralls.io/github/lovego/concise_tree)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lovego/concise_tree)](https://goreportcard.com/report/github.com/lovego/concise_tree)
 [![Documentation](https://pkg.go.dev/badge/github.com/lovego/concise_tree)](https://pkg.go.dev/github.com/lovego/concise_tree@v0.0.3)
 
