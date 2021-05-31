@@ -138,13 +138,45 @@ func ExampleToNormal() {
 }
 
 func ExampleNormalTree_Keep() {
-	r := tree.NormalTree{
+	r := (&tree.NormalTree{
 		NormalTreeNode: tree.NormalTreeNode{Path: "root"},
-	}.Keep(func(node tree.NormalTreeNode) bool {
+	}).Keep(func(node tree.NormalTreeNode) bool {
 		return node.Path != "root"
 	})
 	fmt.Printf("%+v\n", r)
 
 	// Output:
-	// {paths:map[] NormalTreeNode:{Path: Tags:map[] Children:[]}}
+	// {pathsMap:map[] childrenPaths:[] NormalTreeNode:{Path: Tags:map[] Children:[]}}
+}
+
+func ExampleNormalTree_CheckPaths() {
+	modules := &Modules{}
+	tree.Setup(modules, "", map[string]string{"name": "根节点"})
+	normalTree := tree.ToNormal(modules)
+	fmt.Println(normalTree.CheckPaths([]string{"bill", "goods", "goods.create"}))
+	fmt.Println(normalTree.CheckPaths([]string{"goods", "goods.create", "goods.insert"}))
+
+	// Output:
+	// <nil>
+	// unknown path: goods.insert
+}
+
+func ExampleNormalTree_CleanPaths() {
+	modules := &Modules{}
+	tree.Setup(modules, "", map[string]string{"name": "根节点"})
+	normalTree := tree.ToNormal(modules)
+	fmt.Println(normalTree.CleanPaths([]string{"goods", "goods.create", "goods.insert"}))
+
+	// Output:
+	// [goods goods.create]
+}
+
+func ExampleNormalTree_ChildrenPaths() {
+	modules := &Modules{}
+	tree.Setup(modules, "", map[string]string{"name": "根节点"})
+	normalTree := tree.ToNormal(modules)
+	fmt.Println(normalTree.ChildrenPaths())
+
+	// Output:
+	// [bill goods]
 }

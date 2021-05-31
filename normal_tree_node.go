@@ -12,6 +12,14 @@ type NormalTreeNode struct {
 	Children []NormalTreeNode  `json:"children,omitempty"`
 }
 
+func (t NormalTreeNode) ChildrenPaths() []string {
+	var paths []string
+	for i := range t.Children {
+		paths = append(paths, t.Children[i].Path)
+	}
+	return paths
+}
+
 func (t NormalTreeNode) setupPathsMap(m map[string]struct{}) {
 	m[t.Path] = struct{}{}
 	for _, child := range t.Children {
