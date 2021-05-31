@@ -3,6 +3,8 @@ package concise_tree
 import (
 	"errors"
 	"reflect"
+	"sort"
+	"strings"
 )
 
 // NormalTree是一个正规形式的树结构。它经常被用在很多常见情况下。
@@ -37,6 +39,7 @@ func (t *NormalTree) PathsMap() map[string]struct{} {
 	return t.pathsMap
 }
 
+// CheckPaths return an error if has unknown path
 func (t *NormalTree) CheckPaths(paths []string) error {
 	for _, path := range paths {
 		if _, ok := t.pathsMap[path]; !ok {
@@ -46,6 +49,7 @@ func (t *NormalTree) CheckPaths(paths []string) error {
 	return nil
 }
 
+// CleanPaths remove paths that's not in the normal tree.
 func (t *NormalTree) CleanPaths(paths []string) []string {
 	j := 0
 	for _, path := range paths {
@@ -65,4 +69,40 @@ func (t *NormalTree) init() {
 	t.pathsMap = make(map[string]struct{})
 	t.setupPathsMap(t.pathsMap)
 	t.childrenPaths = t.NormalTreeNode.ChildrenPaths()
+}
+
+// Belongs return true if path or any ancestor of path is included in pathsMap.
+func Belongs(path string, pathsMap map[string]struct{}) bool {
+	for {
+		if _, ok := pathsMap[path]; ok {
+			return true
+		}
+		if i := strings.LastIndexByte(path, '.'); i > 0 {
+			path = path[:i]
+		} else {
+			return false
+		}
+	}
+}
+
+// remove duplicate paths that belongs to another one in paths.
+func RemoveDuplicatePaths(paths []string) []string {
+	m := make(map[string]struct{})
+	sort.Strings(paths)
+	for _, path := range paths {
+		if !Belongs(path, m) {
+			m[path] = struct{}{}
+		}
+	}
+	if len(paths) == len(m) {
+		return paths
+	}
+	var result = make([]string, len(m))
+	i := 0
+	for path := range m {
+		result[i] = path
+		i++
+	}
+	sort.Strings(result)
+	return result
 }
