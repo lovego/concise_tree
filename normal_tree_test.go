@@ -3,35 +3,25 @@ package concise_tree_test
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	tree "github.com/lovego/concise_tree"
 )
 
-func ExampleToNormal() {
+var normalTree tree.NormalTree
+
+func init() {
 	modules := &Modules{}
 	tree.Setup(modules, "", map[string]string{"name": "根节点"})
-	normalTree := tree.ToNormal(modules)
+	normalTree = tree.ToNormal(modules)
+}
 
+func ExampleToNormal() {
 	if b, err := json.MarshalIndent(normalTree, "", "  "); err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(string(b))
 	}
-
-	if b, err := json.MarshalIndent(normalTree.PathsMap(), "", "  "); err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(string(b))
-	}
-
-	if b, err := json.MarshalIndent(normalTree.Keep(func(node tree.NormalTreeNode) bool {
-		return node.Tags["name"] != "商品"
-	}), "", "  "); err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(string(b))
-	}
-
 	// Output:
 	// {
 	//   "path": "",
@@ -94,16 +84,100 @@ func ExampleToNormal() {
 	//     }
 	//   ]
 	// }
+}
+
+func ExampleNormalTree_PathsMap() {
+	var pathNames = []string{}
+	for path, node := range normalTree.PathsMap() {
+		pathNames = append(pathNames, path+":"+node.Tags["name"])
+	}
+	sort.Strings(pathNames)
+	fmt.Println(pathNames)
+
+	// Output:
+	// [:根节点 bill.detail:详情 bill.list:列表 bill:单据 goods.create:创建 goods.delete:删除 goods.update:更新 goods:商品]
+}
+
+func keepNameNotEqual(s string) {
+	kept := normalTree.Keep(func(node tree.NormalTreeNode) bool {
+		return node.Tags["name"] != s
+	})
+	fmt.Println(kept.ExcludingPaths())
+	fmt.Println(kept.ExpandedChildrenPaths())
+	if b, err := json.MarshalIndent(kept, "", "  "); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(string(b))
+	}
+}
+
+func ExampleNormalTree_Keep_1() {
+	keepNameNotEqual("删除")
+	// Output:
+	// [goods.delete]
+	// [bill goods.create goods.update]
 	// {
-	//   "": {},
-	//   "bill": {},
-	//   "bill.detail": {},
-	//   "bill.list": {},
-	//   "goods": {},
-	//   "goods.create": {},
-	//   "goods.delete": {},
-	//   "goods.update": {}
+	//   "path": "",
+	//   "tags": {
+	//     "name": "根节点"
+	//   },
+	//   "children": [
+	//     {
+	//       "path": "bill",
+	//       "tags": {
+	//         "desc": "各种单据",
+	//         "name": "单据"
+	//       },
+	//       "children": [
+	//         {
+	//           "path": "bill.list",
+	//           "tags": {
+	//             "desc": "单据列表",
+	//             "name": "列表"
+	//           }
+	//         },
+	//         {
+	//           "path": "bill.detail",
+	//           "tags": {
+	//             "desc": "单据详情",
+	//             "name": "详情"
+	//           }
+	//         }
+	//       ]
+	//     },
+	//     {
+	//       "path": "goods",
+	//       "tags": {
+	//         "desc": "商品（含库存）",
+	//         "name": "商品"
+	//       },
+	//       "children": [
+	//         {
+	//           "path": "goods.create",
+	//           "tags": {
+	//             "desc": "商品创建",
+	//             "name": "创建"
+	//           }
+	//         },
+	//         {
+	//           "path": "goods.update",
+	//           "tags": {
+	//             "desc": "商品更新",
+	//             "name": "更新"
+	//           }
+	//         }
+	//       ]
+	//     }
+	//   ]
 	// }
+}
+
+func ExampleNormalTree_Keep_2() {
+	keepNameNotEqual("商品")
+
+	// Output:
+	// [goods]
+	// [bill]
 	// {
 	//   "path": "",
 	//   "tags": {
@@ -137,7 +211,7 @@ func ExampleToNormal() {
 	// }
 }
 
-func ExampleNormalTree_Keep() {
+func ExampleNormalTree_Keep_remove_root() {
 	r := (&tree.NormalTree{
 		NormalTreeNode: tree.NormalTreeNode{Path: "root"},
 	}).Keep(func(node tree.NormalTreeNode) bool {
@@ -146,13 +220,10 @@ func ExampleNormalTree_Keep() {
 	fmt.Printf("%+v\n", r)
 
 	// Output:
-	// {pathsMap:map[] childrenPaths:[] NormalTreeNode:{Path: Tags:map[] Children:[]}}
+	// {pathsMap:map[] excludingPaths:[] childrenPaths:[] expandedChildrenPaths:[] NormalTreeNode:{Path: Tags:map[] Children:[]}}
 }
 
 func ExampleNormalTree_CheckPaths() {
-	modules := &Modules{}
-	tree.Setup(modules, "", map[string]string{"name": "根节点"})
-	normalTree := tree.ToNormal(modules)
 	fmt.Println(normalTree.CheckPaths([]string{"bill", "goods", "goods.create"}))
 	fmt.Println(normalTree.CheckPaths([]string{"goods", "goods.create", "goods.insert"}))
 
@@ -162,9 +233,6 @@ func ExampleNormalTree_CheckPaths() {
 }
 
 func ExampleNormalTree_CleanPaths() {
-	modules := &Modules{}
-	tree.Setup(modules, "", map[string]string{"name": "根节点"})
-	normalTree := tree.ToNormal(modules)
 	fmt.Println(normalTree.CleanPaths([]string{"goods", "goods.create", "goods.insert"}))
 
 	// Output:
@@ -172,9 +240,6 @@ func ExampleNormalTree_CleanPaths() {
 }
 
 func ExampleNormalTree_ChildrenPaths() {
-	modules := &Modules{}
-	tree.Setup(modules, "", map[string]string{"name": "根节点"})
-	normalTree := tree.ToNormal(modules)
 	fmt.Println(normalTree.ChildrenPaths())
 
 	// Output:

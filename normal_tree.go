@@ -11,8 +11,10 @@ import (
 //
 // NormalTree is a tree structure in normal form. It's commonly used in most common cases.
 type NormalTree struct {
-	pathsMap      map[string]struct{}
-	childrenPaths []string
+	pathsMap              map[string]*NormalTreeNode
+	excludingPaths        []string
+	childrenPaths         []string
+	expandedChildrenPaths []string
 	NormalTreeNode
 }
 
@@ -30,12 +32,13 @@ func (t *NormalTree) Keep(fn func(NormalTreeNode) bool) NormalTree {
 	if !fn(t.NormalTreeNode) {
 		return NormalTree{}
 	}
-	tree := NormalTree{NormalTreeNode: t.keep(fn)}
+	kept, removedPaths := t.keep(fn)
+	tree := NormalTree{NormalTreeNode: kept, excludingPaths: removedPaths}
 	tree.init()
 	return tree
 }
 
-func (t *NormalTree) PathsMap() map[string]struct{} {
+func (t *NormalTree) PathsMap() map[string]*NormalTreeNode {
 	return t.pathsMap
 }
 
@@ -61,14 +64,33 @@ func (t *NormalTree) CleanPaths(paths []string) []string {
 	return paths[:j]
 }
 
+func (t *NormalTree) ExcludingPaths() []string {
+	return t.excludingPaths
+}
+
+// ExpandPaths expand paths so that they are not ancestor of any excluding path.
+func (t *NormalTree) ExpandPaths(paths []string) (result []string) {
+	for _, path := range paths {
+		if node := t.pathsMap[path]; node != nil {
+			result = append(result, node.ExpandPath(t.excludingPaths)...)
+		}
+	}
+	return
+}
+
 func (t *NormalTree) ChildrenPaths() []string {
 	return t.childrenPaths
 }
 
+func (t *NormalTree) ExpandedChildrenPaths() []string {
+	return t.expandedChildrenPaths
+}
+
 func (t *NormalTree) init() {
-	t.pathsMap = make(map[string]struct{})
+	t.pathsMap = make(map[string]*NormalTreeNode)
 	t.setupPathsMap(t.pathsMap)
 	t.childrenPaths = t.NormalTreeNode.ChildrenPaths()
+	t.expandedChildrenPaths = t.ExpandPaths(t.childrenPaths)
 }
 
 // Belongs return true if path or any ancestor of path is included in pathsMap.
